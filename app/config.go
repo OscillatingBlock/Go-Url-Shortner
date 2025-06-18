@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/joho/godotenv" // Import godotenv
+	"github.com/joho/godotenv"
 )
 
 type Configuration struct {
@@ -21,7 +21,6 @@ func InitConfig() Configuration {
 	err := godotenv.Load()
 	if err != nil {
 		slog.Error("Warning: .env file not found or could not be loaded. Relying on system environment variables: ", "error", err)
-		// Don't fatal here, allow fallback to system env vars or default config
 	} else {
 		slog.Error(".env file loaded successfully.")
 	}
