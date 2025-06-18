@@ -47,7 +47,7 @@ Follow these steps to get the URL Shortener running on your local machine:
     BASE_URL="http://localhost:8080/"
 
     # Database Configuration (MySQL)
-    DSN="bunuser:bunpassword@tcp(127.0.0.1:3306)/url_parserer_db?parseTime=true&loc=Local"
+    DSN="bunuser:bunpass@tcp(127.0.0.1:3306)/url_parserer_db"
     ```
     **Remember to replace `bunuser` and `bunpassword` with your actual MySQL credentials.**
 
