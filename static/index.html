@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go URL Shortener Frontend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="url"], input[type="text"] {
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result-area {
+            margin-top: 25px;
+            padding: 15px;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            min-height: 50px;
+            word-wrap: break-word; /* Ensure long URLs wrap */
+        }
+        #result-area p {
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+        #result-area a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        #result-area a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Go URL Shortener</h1>
+
+        <div class="form-group">
+            <label for="longUrlInput">Long URL:</label>
+            <input type="url" id="longUrlInput" placeholder="e.g., https://very.long.example.com/page?param=value" required>
+        </div>
+        <button id="shortenButton">Shorten URL</button>
+
+        <div id="result-area">
+            <p>Your shortened URL will appear here.</p>
+        </div>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+
+        <h2>Retrieve Original URL</h2>
+        <p>Enter a short code to get its original URL details.</p>
+        <div class="form-group">
+            <label for="shortCodeLookupInput">Short Code:</label>
+            <input type="text" id="shortCodeLookupInput" placeholder="e.g., yWnYLAY">
+        </div>
+        <button id="lookupButton">Lookup</button>
+        <div id="lookup-result-area" style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+            <p>Lookup results will appear here.</p>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://localhost:8080/api"; // Your Go API base URL
+
+        const shortenButton = document.getElementById('shortenButton');
+        const longUrlInput = document.getElementById('longUrlInput');
+        const resultArea = document.getElementById('result-area');
+
+        const lookupButton = document.getElementById('lookupButton');
+        const shortCodeLookupInput = document.getElementById('shortCodeLookupInput');
+        const lookupResultArea = document.getElementById('lookup-result-area');
+
+        shortenButton.addEventListener('click', async () => {
+            const longUrl = longUrlInput.value;
+            if (!longUrl) {
+                resultArea.innerHTML = '<p class="error">Please enter a URL to shorten.</p>';
+                return;
+            }
+
+            resultArea.innerHTML = '<p>Shortening...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/set`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url_string: longUrl })
+                });
+
+                const data = await response.json(); // Always try to parse JSON
+
+                if (response.ok) { // Check if status is 2xx
+                    resultArea.innerHTML = `
+                        <p class="success">URL Shortened Successfully!</p>
+                        <p>Original: <code>${data.OriginalUrl}</code></p>
+                        <p>Short: <a href="${data.ShortenedUrl}" target="_blank">${data.ShortenedUrl}</a></p>
+                    `;
+                    longUrlInput.value = ''; // Clear input on success
+                } else {
+                    // Handle API errors (e.g., 400 Bad Request, 500 Internal Server Error)
+                    const errorMessage = data.message || `Error: ${response.status} ${response.statusText}`;
+                    resultArea.innerHTML = `<p class="error">${errorMessage}</p>`;
+                }
+            } catch (error) {
+                console.error('Fetch error for shortening:', error);
+                resultArea.innerHTML = '<p class="error">Network error or server unreachable. Is your Go API running?</p>';
+            }
+        });
+
+        lookupButton.addEventListener('click', async () => {
+            const shortCode = shortCodeLookupInput.value;
+            if (!shortCode) {
+                lookupResultArea.innerHTML = '<p class="error">Please enter a short code to lookup.</p>';
+                return;
+            }
+
+            lookupResultArea.innerHTML = '<p>Looking up...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/get?url=${encodeURIComponent(shortCode)}`);
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    lookupResultArea.innerHTML = `
+                        <p class="success">Lookup Successful!</p>
+                        <p>Original: <code>${data.OriginalUrl}</code></p>
+                        <p>Shortened: <a href="${data.ShortenedUrl}" target="_blank">${data.ShortenedUrl}</a></p>
+                    `;
+                    shortCodeLookupInput.value = '';
+                } else {
+                    const errorMessage = data.message || `Error: ${response.status} ${response.statusText}`;
+                    lookupResultArea.innerHTML = `<p class="error">${errorMessage}</p>`;
+                }
+            } catch (error) {
+                console.error('Fetch error for lookup:', error);
+                lookupResultArea.innerHTML = '<p class="error">Network error or server unreachable. Is your Go API running?</p>';
+            }
+        });
+
+    </script>
+</body>
+</html>
