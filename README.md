@@ -1,4 +1,4 @@
-# My First Go URL Shortener
+# Go URL Shortener
 
 This is my very first project built with Go! It's a simple URL shortening service that converts long URLs into short, shareable links, featuring both a RESTful API and an integrated web interface.
 
