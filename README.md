@@ -7,8 +7,7 @@ This is my very first project built with Go! It's a simple URL shortening servic
 * **Backend:**
     * Go (using `net/http` for server)
     * [Bun](https://bun.uptrace.dev/) (ORM for database interaction)
-    * `go-sql-driver/mysql`
-    * `github.com/joho/godotenv` (for environment variables)
+
 * **Database:** MySQL
 * **Frontend:** HTML, CSS, JavaScript (served directly by the Go application)
 
@@ -48,7 +47,7 @@ Follow these steps to get the URL Shortener running on your local machine:
     BASE_URL="http://localhost:8080/"
 
     # Database Configuration (MySQL)
-    DB_DSN="bunuser:bunpassword@tcp(127.0.0.1:3306)/url_parserer_db?parseTime=true&loc=Local"
+    DSN="bunuser:bunpassword@tcp(127.0.0.1:3306)/url_parserer_db?parseTime=true&loc=Local"
     ```
     **Remember to replace `bunuser` and `bunpassword` with your actual MySQL credentials.**
 
